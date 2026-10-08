@@ -11,18 +11,18 @@
     <!-- Tresor: Anmeldung bzw. Ersteinrichtung -->
     <div id="loginOverlay" class="overlay">
         <form id="loginForm" class="login-card">
-            <h1>🔐 Tresor</h1>
+            <h1>Bewerbungsmanager</h1>
             <p id="loginHint">Wird geladen …</p>
 
             <div class="password-container">
                 <input type="password" id="masterPassword" placeholder="Master-Passwort" autocomplete="current-password" required>
-                <button type="button" id="togglePassword" class="btn-toggle-pw" title="Passwort anzeigen">👁️</button>
+                <button type="button" id="togglePassword" class="btn-toggle-pw" title="Passwort anzeigen">Anzeigen</button>
             </div>
             <div id="confirmContainer" class="password-container hidden">
                 <input type="password" id="confirmPassword" placeholder="Passwort wiederholen" autocomplete="new-password">
             </div>
 
-            <button type="submit" id="loginButton">Tresor öffnen</button>
+            <button type="submit" id="loginButton" class="btn-primary">Entsperren</button>
             <p id="loginError" class="error-text"></p>
         </form>
     </div>
@@ -33,39 +33,40 @@
             <h1>Bewerbungsmanager</h1>
             <div class="header-actions">
                 <span id="aiStatus" class="ai-status" title="">KI wird geprüft …</span>
-                <button type="button" class="btn-danger" id="lockButton">🔒 Sperren</button>
+                <button type="button" id="lockButton">Sperren</button>
             </div>
         </header>
 
         <nav class="tabs">
-            <button type="button" class="tab active" data-view="overview">📋 Übersicht</button>
-            <button type="button" class="tab" data-view="stall">⏳ Hinhalten</button>
-            <button type="button" class="tab" data-view="reject">✉️ Absagen</button>
-            <button type="button" class="tab" data-view="settings">⚙️ Einstellungen</button>
+            <button type="button" class="tab active" data-view="overview">Übersicht</button>
+            <button type="button" class="tab" data-view="stall">Hinhalten</button>
+            <button type="button" class="tab" data-view="reject">Absagen</button>
+            <button type="button" class="tab" data-view="settings">Einstellungen</button>
         </nav>
 
         <!-- Übersicht -->
         <section id="view-overview" class="view">
             <div class="card">
-                <h2>Bewerber erfassen</h2>
+                <h2>Bewerbung erfassen</h2>
                 <div class="button-row">
                     <input type="file" id="resumeFiles" accept="application/pdf" multiple hidden>
-                    <button type="button" id="uploadButton">📄 PDFs hochladen (KI)</button>
-                    <button type="button" id="manualButton" class="btn-secondary">✍️ Manuell hinzufügen</button>
+                    <button type="button" id="uploadButton" class="btn-primary">Lebensläufe hochladen</button>
+                    <button type="button" id="manualButton">Manuell erfassen</button>
                 </div>
-                <p id="uploadStatus" class="hint"></p>
+                <p class="hint">PDF-Dateien, bis zu 10 auf einmal. Die Angaben werden von der lokalen KI ausgelesen und können danach angepasst werden.</p>
+                <p id="uploadStatus" class="upload-status"></p>
                 <ul id="uploadErrors" class="error-list"></ul>
             </div>
 
-            <div id="viewSection" class="card card-accent-green hidden">
+            <div id="viewSection" class="card hidden">
                 <div class="detail-header">
                     <div>
                         <h2 id="viewName"></h2>
                         <span id="viewStatus"></span>
                     </div>
                     <div class="button-row">
-                        <button type="button" class="btn-edit" id="editButton">✏️ Bearbeiten</button>
-                        <button type="button" class="btn-cancel" data-close="viewSection">✕</button>
+                        <button type="button" id="editButton">Bearbeiten</button>
+                        <button type="button" data-close="viewSection">Schliessen</button>
                     </div>
                 </div>
 
@@ -84,7 +85,7 @@
                 <div id="viewReviews" class="comments-stack"></div>
             </div>
 
-            <div id="editSection" class="card card-accent-blue hidden">
+            <div id="editSection" class="card hidden">
                 <h2 id="formTitle">Bewerber bearbeiten</h2>
                 <form id="editForm">
                     <div class="data-grid">
@@ -97,9 +98,9 @@
                         <div class="field">
                             <label for="inStatus">Status</label>
                             <select id="inStatus">
-                                <option value="offen">🟢 Offen</option>
-                                <option value="hingehalten">⏳ Hingehalten</option>
-                                <option value="abgesagt">🔴 Abgesagt</option>
+                                <option value="offen">Offen</option>
+                                <option value="hingehalten">Hingehalten</option>
+                                <option value="abgesagt">Abgesagt</option>
                             </select>
                         </div>
                     </div>
@@ -112,8 +113,8 @@
                     <div id="editReviews" class="comments-stack"></div>
 
                     <div class="button-row field-spaced">
-                        <button type="submit" class="btn-save">💾 Verschlüsselt speichern</button>
-                        <button type="button" class="btn-cancel" data-close="editSection">Abbrechen</button>
+                        <button type="submit" class="btn-primary">Speichern</button>
+                        <button type="button" data-close="editSection">Abbrechen</button>
                     </div>
                 </form>
             </div>
@@ -121,26 +122,26 @@
             <div class="card">
                 <div class="card-header">
                     <h2>Bewerber</h2>
-                    <button type="button" id="exportButton" class="btn-excel">📊 Export nach Excel</button>
+                    <button type="button" id="exportButton">Als Excel exportieren</button>
                 </div>
 
                 <div class="table-controls">
                     <div id="candidateCounter" class="counter">0 Bewerber</div>
                     <div class="search-container">
-                        <input type="search" class="search-input" data-list="overview" placeholder="🔍 Nach Name suchen …">
+                        <input type="search" class="search-input" data-list="overview" placeholder="Name suchen">
                     </div>
                     <select id="statusFilter" class="sort-select">
                         <option value="">Alle Status</option>
-                        <option value="offen">🟢 Offen</option>
-                        <option value="hingehalten">⏳ Hingehalten</option>
-                        <option value="abgesagt">🔴 Abgesagt</option>
+                        <option value="offen">Offen</option>
+                        <option value="hingehalten">Hingehalten</option>
+                        <option value="abgesagt">Abgesagt</option>
                     </select>
                     <select id="sortSelect" class="sort-select">
                         <option value="newest">Neueste zuerst</option>
                         <option value="oldest">Älteste zuerst</option>
                         <option value="asc">Name: A bis Z</option>
                         <option value="desc">Name: Z bis A</option>
-                        <option value="incomplete">⚠️ Unvollständig bewertet</option>
+                        <option value="incomplete">Noch nicht von allen bewertet</option>
                     </select>
                 </div>
 
@@ -162,8 +163,8 @@
                 </div>
                 <div id="emptyState" class="empty-state hidden">
                     <p>Noch keine Bewerber erfasst.</p>
-                    <p class="hint">Laden Sie einen Lebenslauf als PDF hoch, erfassen Sie jemanden manuell – oder probieren Sie das Tool mit fiktiven Daten aus.</p>
-                    <button type="button" id="demoButton" class="btn-secondary">🧪 Demo-Daten laden</button>
+                    <p class="hint">Laden Sie einen Lebenslauf hoch oder erfassen Sie eine Bewerbung manuell. Zum Ausprobieren gibt es auch ein paar fiktive Beispiele.</p>
+                    <button type="button" id="demoButton">Beispieldaten laden</button>
                 </div>
             </div>
         </section>
@@ -174,7 +175,7 @@
                 <h2>Bewerber hinhalten</h2>
                 <p class="hint">Öffnet eine vorbereitete Zwischenbescheid-Mail im Mailprogramm und setzt den Status auf „Hingehalten“. Bereits abgesagte Bewerber werden nicht angezeigt.</p>
                 <div class="search-container search-full">
-                    <input type="search" class="search-input" data-list="stall" placeholder="🔍 Nach Name suchen …">
+                    <input type="search" class="search-input" data-list="stall" placeholder="Name suchen">
                 </div>
                 <div class="table-container">
                     <table>
@@ -200,7 +201,7 @@
                 <h2>Absagen versenden</h2>
                 <p class="hint">Öffnet eine vorbereitete Absage im Mailprogramm und setzt den Status auf „Abgesagt“. Offene Absagen stehen zuoberst.</p>
                 <div class="search-container search-full">
-                    <input type="search" class="search-input" data-list="reject" placeholder="🔍 Nach Name suchen …">
+                    <input type="search" class="search-input" data-list="reject" placeholder="Name suchen">
                 </div>
                 <div class="table-container">
                     <table>
@@ -235,7 +236,7 @@
                     <h2>Team</h2>
                     <p class="hint">Jedes Team-Mitglied kann pro Bewerber eine Bewertung (A/B/C) und einen Kommentar erfassen.</p>
                     <div id="teamList" class="team-list"></div>
-                    <button type="button" id="addMemberButton" class="btn-secondary">➕ Mitglied hinzufügen</button>
+                    <button type="button" id="addMemberButton">Person hinzufügen</button>
                 </div>
 
                 <div class="card">
@@ -252,7 +253,7 @@
                 </div>
 
                 <div class="button-row">
-                    <button type="submit" class="btn-save">💾 Einstellungen speichern</button>
+                    <button type="submit" class="btn-primary">Speichern</button>
                     <span id="settingsStatus" class="hint"></span>
                 </div>
             </form>

@@ -17,7 +17,7 @@ Alle personenbezogenen Daten werden **im Browser verschlüsselt**, bevor sie ges
 - **Suchen, filtern, sortieren:** unter anderem ein Filter für „unvollständig bewertet“.
 - **Excel-Export** aller Bewerber inklusive Bewertungen und Kommentaren.
 - **Einstellungen:** Team-Mitglieder, Firmenname und Mail-Vorlagen sind frei anpassbar.
-- **Demo-Daten:** Fiktive Bewerber zum Ausprobieren mit einem Klick.
+- **Beispieldaten:** Fiktive Bewerber zum Ausprobieren mit einem Klick.
 
 ![Detailansicht](docs/detailansicht.jpg)
 
@@ -36,10 +36,10 @@ cd bewerbungsmanager
 npm install
 ```
 
-KI-Modell herunterladen (einmalig, ca. 2 GB):
+KI-Modell herunterladen (einmalig, ca. 6.6 GB):
 
 ```bash
-ollama pull llama3.2
+ollama pull qwen3.5
 ```
 
 Starten:
@@ -50,7 +50,7 @@ npm start
 
 Danach im Browser <http://localhost:3000> öffnen. Beim ersten Start legen Sie ein Master-Passwort fest.
 
-Zum Ausprobieren eignet sich der fiktive Lebenslauf in [`samples/`](samples/) oder die Schaltfläche **Demo-Daten laden**.
+Zum Ausprobieren eignet sich der fiktive Lebenslauf in [`samples/`](samples/) oder die Schaltfläche **Beispieldaten laden**.
 
 ## Konfiguration
 
@@ -61,10 +61,23 @@ Optional `.env.example` nach `.env` kopieren und anpassen:
 | `PORT` | `3000` | Port des Servers |
 | `HOST` | `127.0.0.1` | `127.0.0.1` = nur von diesem Computer erreichbar |
 | `OLLAMA_URL` | `http://localhost:11434` | Adresse von Ollama |
-| `OLLAMA_MODEL` | `llama3.2` | Beliebiges Ollama-Modell, z. B. `qwen3`, `gemma3` |
+| `OLLAMA_MODEL` | `qwen3.5` | Beliebiges Ollama-Modell, siehe unten |
 | `DB_PATH` | `./data/bewerbungen.db` | Speicherort der Datenbank |
 
 Team, Firmenname und Mail-Vorlagen werden direkt in der App unter **Einstellungen** gepflegt.
+
+### Wahl des KI-Modells
+
+Getestet mit einem zweiseitigen Lebenslauf in zweispaltigem Layout:
+
+| Modell | Grösse | Dauer | Ergebnis |
+|---|---|---|---|
+| `qwen3.5` | 6.6 GB | ca. 30 s | Alle Stationen korrekt, gute Zusammenfassung (empfohlen) |
+| `llama3.1:8b` | 4.9 GB | ca. 25 s | Stationen korrekt, Positionen fehlen teilweise |
+| `gemma3:4b` | 3.3 GB | ca. 17 s | Zeiträume korrekt, Berufsbezeichnungen teils erfunden |
+| `llama3.2` | 2.0 GB | ca. 13 s | Für schwächere Rechner. Erfindet gelegentlich Stellen |
+
+Kontaktangaben (Geburtsdatum, E-Mail, Telefon) werden nur übernommen, wenn sie tatsächlich im PDF vorkommen. Erfundene Werte kleiner Modelle fallen so automatisch weg.
 
 ## Architektur
 
@@ -88,7 +101,7 @@ Browser                                   Server (Node.js/Express)          Loka
 - **Ende-zu-Ende-Verschlüsselung** mit der Web Crypto API: Der Schlüssel existiert nur im Arbeitsspeicher des Browsers. In der Datenbank stehen ausser dem Status nur verschlüsselte Daten.
 - **Passwortprüfung** über einen verschlüsselten Prüfwert. Ein falsches Passwort wird abgewiesen, statt unlesbare Einträge zu erzeugen.
 - **PDFs** werden nur im Arbeitsspeicher verarbeitet und nie auf die Festplatte geschrieben.
-- **Ollama** erhält über Structured Outputs ein JSON-Schema. Die Antwort ist dadurch immer valides JSON.
+- **Ollama** erhält über Structured Outputs ein JSON-Schema mit eigenen Feldern pro beruflicher Station (Zeitraum, Position, Firma, Ort, Tätigkeiten). Die Antwort ist dadurch immer valides JSON; der Server setzt daraus den Text zusammen.
 - **Keine Cloud, kein Build-Schritt:** Express, SQLite (`node:sqlite`, in Node.js eingebaut) und Vanilla-JavaScript mit ES-Modulen. Das Frontend lädt keine externen Ressourcen.
 
 ### Projektstruktur

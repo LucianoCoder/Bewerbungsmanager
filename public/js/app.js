@@ -5,10 +5,11 @@ import { DEFAULT_SETTINGS, demoApplicants } from './defaults.js';
 import { exportExcel } from './excel.js';
 
 const MAX_FILES = 10;
+const TRASH_ICON = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>';
 const STATUS_HTML = {
-    offen: '<span class="status status-open">🟢 Offen</span>',
-    hingehalten: '<span class="status status-stalled">⏳ Hingehalten</span>',
-    abgesagt: '<span class="status status-rejected">🔴 Abgesagt</span>'
+    offen: '<span class="status status-open">Offen</span>',
+    hingehalten: '<span class="status status-stalled">Hingehalten</span>',
+    abgesagt: '<span class="status status-rejected">Abgesagt</span>'
 };
 
 const state = {
@@ -41,13 +42,13 @@ async function initLogin() {
     }
 
     if (state.vaultInfo.initialized) {
-        $('loginHint').innerHTML = 'Geben Sie das Master-Passwort ein.<br><small>Es wird nirgends gespeichert.</small>';
+        $('loginHint').innerHTML = 'Bitte geben Sie Ihr Passwort ein.';
     } else {
-        $('loginHint').innerHTML = 'Willkommen! Legen Sie ein Master-Passwort fest (mind. 8 Zeichen).<br>' +
-            '<small><strong>Wichtig:</strong> Ohne dieses Passwort lassen sich die Daten nicht wiederherstellen.</small>';
+        $('loginHint').innerHTML = 'Legen Sie ein Passwort fest, mit dem alle Daten verschlüsselt werden (mindestens 8 Zeichen).<br>' +
+            '<small>Es lässt sich nicht zurücksetzen. Ohne Passwort sind die Daten verloren.</small>';
         $('confirmContainer').classList.remove('hidden');
         $('masterPassword').autocomplete = 'new-password';
-        $('loginButton').textContent = 'Tresor einrichten';
+        $('loginButton').textContent = 'Einrichten';
     }
     $('masterPassword').focus();
 }
@@ -65,13 +66,13 @@ async function unlock(event) {
     }
 
     button.disabled = true;
-    button.textContent = 'Schlüssel wird berechnet …';
+    button.textContent = 'Einen Moment …';
     try {
         if (state.vaultInfo.initialized) {
             const { salt, iterations, check } = state.vaultInfo;
             const key = await vault.deriveKey(password, salt, iterations);
             if (!(await vault.verifyCheck(key, check))) {
-                $('loginError').textContent = 'Falsches Master-Passwort.';
+                $('loginError').textContent = 'Das Passwort stimmt nicht.';
                 $('masterPassword').select();
                 return;
             }
@@ -177,7 +178,7 @@ function ratingsHtml(applicant) {
 }
 
 function nameCell(applicant) {
-    return applicant.locked ? '<em>🔒 Nicht entschlüsselbar</em>' : `<strong>${esc(fullName(applicant))}</strong>`;
+    return applicant.locked ? '<em class="hint">Nicht lesbar</em>' : `<strong>${esc(fullName(applicant))}</strong>`;
 }
 
 const byNewest = (a, b) => b.createdAt.localeCompare(a.createdAt) || b.id - a.id;
@@ -209,15 +210,15 @@ function renderOverview() {
             <td>${esc(a.birthDate) || '—'}</td>
             <td>${nameCell(a)}</td>
             <td>${esc(a.email) || '—'}</td>
-            <td class="action-cell"><button type="button" class="btn-delete-icon" data-action="delete" data-id="${a.id}" title="Löschen">🗑️</button></td>
+            <td class="action-cell"><button type="button" class="btn-delete-icon" data-action="delete" data-id="${a.id}" title="Löschen" aria-label="Löschen">${TRASH_ICON}</button></td>
         </tr>`).join('');
 }
 
 // Gemeinsame Darstellung der Seiten „Hinhalten“ und „Absagen“.
 function renderMailList(type) {
     const config = {
-        stall: { body: 'stallBody', doneStatus: 'hingehalten', button: '⏳ Mail senden', buttonClass: 'btn-stall' },
-        reject: { body: 'rejectBody', doneStatus: 'abgesagt', button: '✉️ Absagen', buttonClass: 'btn-reject' }
+        stall: { body: 'stallBody', doneStatus: 'hingehalten', button: 'Mail vorbereiten', buttonClass: 'btn-small' },
+        reject: { body: 'rejectBody', doneStatus: 'abgesagt', button: 'Absage vorbereiten', buttonClass: 'btn-small' }
     }[type];
 
     const term = searchTerm(type);
@@ -235,7 +236,7 @@ function renderMailList(type) {
             <td>${nameCell(a)}</td>
             <td>${esc(a.email) || '—'}</td>
             <td>${done
-                ? '<span class="hint">Erledigt</span>'
+                ? '<span class="hint">Versendet</span>'
                 : `<button type="button" class="${config.buttonClass}" data-action="mail-${type}" data-id="${a.id}">${config.button}</button>`}</td>
         </tr>`;
     }).join('') || '<tr><td colspan="6" class="hint">Keine Bewerber.</td></tr>';
@@ -276,7 +277,7 @@ function showView(id) {
 function showEditForm(applicant = {}) {
     state.currentId = applicant.id ?? null;
     $('viewSection').classList.add('hidden');
-    $('formTitle').textContent = applicant.id ? 'Bewerber bearbeiten' : 'Neuen Bewerber erfassen';
+    $('formTitle').textContent = applicant.id ? 'Bewerbung bearbeiten' : 'Neue Bewerbung';
 
     $('inFirstName').value = applicant.firstName || '';
     $('inLastName').value = applicant.lastName || '';
@@ -402,7 +403,7 @@ async function uploadResumes(files) {
     const errorsEl = $('uploadErrors');
     const button = $('uploadButton');
     errorsEl.innerHTML = '';
-    statusEl.textContent = `⏳ ${files.length} PDF(s) werden von der lokalen KI analysiert … Das kann pro Datei einige Sekunden dauern.`;
+    statusEl.textContent = `${files.length === 1 ? 'Lebenslauf wird' : `${files.length} Lebensläufe werden`} ausgelesen. Das dauert pro Datei etwa 15 bis 45 Sekunden …`;
     button.disabled = true;
 
     try {
@@ -416,10 +417,10 @@ async function uploadResumes(files) {
         renderAll();
 
         const failed = results.filter(r => !r.ok);
-        statusEl.textContent = `${failed.length ? '⚠️' : '✅'} ${saved} von ${files.length} Lebensläufen verschlüsselt gespeichert.`;
+        statusEl.textContent = `${saved} von ${files.length} Lebensläufen gespeichert.`;
         errorsEl.innerHTML = failed.map(r => `<li><strong>${esc(r.fileName)}:</strong> ${esc(r.error)}</li>`).join('');
     } catch (error) {
-        statusEl.textContent = `❌ ${error.message}`;
+        statusEl.textContent = error.message;
     } finally {
         button.disabled = false;
     }
@@ -431,18 +432,18 @@ async function checkAiStatus() {
         const status = await api.getAiStatus();
         state.aiReady = status.available && status.modelInstalled;
         if (state.aiReady) {
-            el.textContent = `🤖 KI bereit (${status.model})`;
+            el.textContent = `KI bereit · ${status.model}`;
             el.title = 'Ollama läuft lokal, Lebensläufe verlassen diesen Computer nicht.';
         } else if (status.available) {
-            el.textContent = '⚠️ KI-Modell fehlt';
+            el.textContent = 'KI-Modell fehlt';
             el.title = `Bitte im Terminal ausführen: ollama pull ${status.model}`;
         } else {
-            el.textContent = '⚪ KI nicht verfügbar';
+            el.textContent = 'KI nicht verfügbar';
             el.title = 'Ollama läuft nicht. Manuelle Erfassung ist weiterhin möglich.';
         }
     } catch {
         state.aiReady = false;
-        el.textContent = '⚪ KI nicht verfügbar';
+        el.textContent = 'KI nicht verfügbar';
     }
     el.className = `ai-status ${state.aiReady ? 'ready' : 'offline'}`;
 }
@@ -485,7 +486,7 @@ function teamRowHtml(member) {
     return `
     <div class="team-row" data-member="${esc(member.id)}">
         <input type="text" value="${esc(member.name)}" placeholder="Name" required>
-        <button type="button" class="btn-delete-icon" data-action="remove-member" title="Entfernen">🗑️</button>
+        <button type="button" class="btn-link" data-action="remove-member">Entfernen</button>
     </div>`;
 }
 
@@ -517,7 +518,7 @@ async function saveSettings(event) {
         await api.saveSettings(await vault.encrypt(state.key, settings));
         state.settings = settings;
         renderAll();
-        $('settingsStatus').textContent = '✅ Gespeichert';
+        $('settingsStatus').textContent = 'Gespeichert';
         setTimeout(() => { $('settingsStatus').textContent = ''; }, 3000);
     } catch (error) {
         alert(`Speichern fehlgeschlagen: ${error.message}`);
@@ -539,7 +540,7 @@ function bindEvents() {
         const input = $('masterPassword');
         const show = input.type === 'password';
         input.type = show ? 'text' : 'password';
-        event.currentTarget.textContent = show ? '🙈' : '👁️';
+        event.currentTarget.textContent = show ? 'Verbergen' : 'Anzeigen';
         event.currentTarget.title = show ? 'Passwort verbergen' : 'Passwort anzeigen';
     });
     $('lockButton').addEventListener('click', lock);
