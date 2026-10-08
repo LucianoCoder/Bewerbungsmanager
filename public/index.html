@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bewerbungsmanager</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- Tresor: Anmeldung bzw. Ersteinrichtung -->
+    <div id="loginOverlay" class="overlay">
+        <form id="loginForm" class="login-card">
+            <h1>🔐 Tresor</h1>
+            <p id="loginHint">Wird geladen …</p>
+
+            <div class="password-container">
+                <input type="password" id="masterPassword" placeholder="Master-Passwort" autocomplete="current-password" required>
+                <button type="button" id="togglePassword" class="btn-toggle-pw" title="Passwort anzeigen">👁️</button>
+            </div>
+            <div id="confirmContainer" class="password-container hidden">
+                <input type="password" id="confirmPassword" placeholder="Passwort wiederholen" autocomplete="new-password">
+            </div>
+
+            <button type="submit" id="loginButton">Tresor öffnen</button>
+            <p id="loginError" class="error-text"></p>
+        </form>
+    </div>
+
+    <div class="container blurred" id="app">
+
+        <header class="header-container">
+            <h1>Bewerbungsmanager</h1>
+            <div class="header-actions">
+                <span id="aiStatus" class="ai-status" title="">KI wird geprüft …</span>
+                <button type="button" class="btn-danger" id="lockButton">🔒 Sperren</button>
+            </div>
+        </header>
+
+        <nav class="tabs">
+            <button type="button" class="tab active" data-view="overview">📋 Übersicht</button>
+            <button type="button" class="tab" data-view="stall">⏳ Hinhalten</button>
+            <button type="button" class="tab" data-view="reject">✉️ Absagen</button>
+            <button type="button" class="tab" data-view="settings">⚙️ Einstellungen</button>
+        </nav>
+
+        <!-- Übersicht -->
+        <section id="view-overview" class="view">
+            <div class="card">
+                <h2>Bewerber erfassen</h2>
+                <div class="button-row">
+                    <input type="file" id="resumeFiles" accept="application/pdf" multiple hidden>
+                    <button type="button" id="uploadButton">📄 PDFs hochladen (KI)</button>
+                    <button type="button" id="manualButton" class="btn-secondary">✍️ Manuell hinzufügen</button>
+                </div>
+                <p id="uploadStatus" class="hint"></p>
+                <ul id="uploadErrors" class="error-list"></ul>
+            </div>
+
+            <div id="viewSection" class="card card-accent-green hidden">
+                <div class="detail-header">
+                    <div>
+                        <h2 id="viewName"></h2>
+                        <span id="viewStatus"></span>
+                    </div>
+                    <div class="button-row">
+                        <button type="button" class="btn-edit" id="editButton">✏️ Bearbeiten</button>
+                        <button type="button" class="btn-cancel" data-close="viewSection">✕</button>
+                    </div>
+                </div>
+
+                <div class="view-grid">
+                    <div class="view-item"><span>Geburtsdatum</span><div id="viewBirthDate" class="view-value"></div></div>
+                    <div class="view-item"><span>E-Mail</span><div id="viewEmail" class="view-value"></div></div>
+                    <div class="view-item"><span>Telefon</span><div id="viewPhone" class="view-value"></div></div>
+                    <div class="view-item"><span>Adresse</span><div id="viewAddress" class="view-value"></div></div>
+                </div>
+                <div class="view-item">
+                    <span>Berufserfahrung</span>
+                    <div id="viewExperience" class="view-value pre"></div>
+                </div>
+
+                <h3 class="section-title">Team-Bewertungen</h3>
+                <div id="viewReviews" class="comments-stack"></div>
+            </div>
+
+            <div id="editSection" class="card card-accent-blue hidden">
+                <h2 id="formTitle">Bewerber bearbeiten</h2>
+                <form id="editForm">
+                    <div class="data-grid">
+                        <div class="field"><label for="inFirstName">Vorname</label><input type="text" id="inFirstName" required></div>
+                        <div class="field"><label for="inLastName">Nachname</label><input type="text" id="inLastName"></div>
+                        <div class="field"><label for="inBirthDate">Geburtsdatum</label><input type="text" id="inBirthDate" placeholder="TT.MM.JJJJ"></div>
+                        <div class="field"><label for="inEmail">E-Mail</label><input type="email" id="inEmail"></div>
+                        <div class="field"><label for="inPhone">Telefon</label><input type="text" id="inPhone"></div>
+                        <div class="field"><label for="inAddress">Adresse</label><input type="text" id="inAddress"></div>
+                        <div class="field">
+                            <label for="inStatus">Status</label>
+                            <select id="inStatus">
+                                <option value="offen">🟢 Offen</option>
+                                <option value="hingehalten">⏳ Hingehalten</option>
+                                <option value="abgesagt">🔴 Abgesagt</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="field field-spaced">
+                        <label for="inExperience">Berufserfahrung</label>
+                        <textarea id="inExperience" rows="6" placeholder="Berufserfahrung als Text …"></textarea>
+                    </div>
+
+                    <h3 class="section-title">Team-Bewertungen</h3>
+                    <div id="editReviews" class="comments-stack"></div>
+
+                    <div class="button-row field-spaced">
+                        <button type="submit" class="btn-save">💾 Verschlüsselt speichern</button>
+                        <button type="button" class="btn-cancel" data-close="editSection">Abbrechen</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2>Bewerber</h2>
+                    <button type="button" id="exportButton" class="btn-excel">📊 Export nach Excel</button>
+                </div>
+
+                <div class="table-controls">
+                    <div id="candidateCounter" class="counter">0 Bewerber</div>
+                    <div class="search-container">
+                        <input type="search" class="search-input" data-list="overview" placeholder="🔍 Nach Name suchen …">
+                    </div>
+                    <select id="statusFilter" class="sort-select">
+                        <option value="">Alle Status</option>
+                        <option value="offen">🟢 Offen</option>
+                        <option value="hingehalten">⏳ Hingehalten</option>
+                        <option value="abgesagt">🔴 Abgesagt</option>
+                    </select>
+                    <select id="sortSelect" class="sort-select">
+                        <option value="newest">Neueste zuerst</option>
+                        <option value="oldest">Älteste zuerst</option>
+                        <option value="asc">Name: A bis Z</option>
+                        <option value="desc">Name: Z bis A</option>
+                        <option value="incomplete">⚠️ Unvollständig bewertet</option>
+                    </select>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="checkbox-cell">Gelesen</th>
+                                <th>Status</th>
+                                <th>Bewertungen</th>
+                                <th>Geburtsdatum</th>
+                                <th>Name</th>
+                                <th>E-Mail</th>
+                                <th class="action-cell"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="overviewBody"></tbody>
+                    </table>
+                </div>
+                <div id="emptyState" class="empty-state hidden">
+                    <p>Noch keine Bewerber erfasst.</p>
+                    <p class="hint">Laden Sie einen Lebenslauf als PDF hoch, erfassen Sie jemanden manuell – oder probieren Sie das Tool mit fiktiven Daten aus.</p>
+                    <button type="button" id="demoButton" class="btn-secondary">🧪 Demo-Daten laden</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Hinhalten -->
+        <section id="view-stall" class="view hidden">
+            <div class="card">
+                <h2>Bewerber hinhalten</h2>
+                <p class="hint">Öffnet eine vorbereitete Zwischenbescheid-Mail im Mailprogramm und setzt den Status auf „Hingehalten“. Bereits abgesagte Bewerber werden nicht angezeigt.</p>
+                <div class="search-container search-full">
+                    <input type="search" class="search-input" data-list="stall" placeholder="🔍 Nach Name suchen …">
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="checkbox-cell">Gelesen</th>
+                                <th>Status</th>
+                                <th>Bewertungen</th>
+                                <th>Name</th>
+                                <th>E-Mail</th>
+                                <th>Aktion</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stallBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Absagen -->
+        <section id="view-reject" class="view hidden">
+            <div class="card">
+                <h2>Absagen versenden</h2>
+                <p class="hint">Öffnet eine vorbereitete Absage im Mailprogramm und setzt den Status auf „Abgesagt“. Offene Absagen stehen zuoberst.</p>
+                <div class="search-container search-full">
+                    <input type="search" class="search-input" data-list="reject" placeholder="🔍 Nach Name suchen …">
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="checkbox-cell">Gelesen</th>
+                                <th>Status</th>
+                                <th>Bewertungen</th>
+                                <th>Name</th>
+                                <th>E-Mail</th>
+                                <th>Aktion</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rejectBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Einstellungen -->
+        <section id="view-settings" class="view hidden">
+            <form id="settingsForm">
+                <div class="card">
+                    <h2>Allgemein</h2>
+                    <div class="field">
+                        <label for="setCompany">Firmenname (Platzhalter {firma} in den Vorlagen)</label>
+                        <input type="text" id="setCompany">
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Team</h2>
+                    <p class="hint">Jedes Team-Mitglied kann pro Bewerber eine Bewertung (A/B/C) und einen Kommentar erfassen.</p>
+                    <div id="teamList" class="team-list"></div>
+                    <button type="button" id="addMemberButton" class="btn-secondary">➕ Mitglied hinzufügen</button>
+                </div>
+
+                <div class="card">
+                    <h2>E-Mail-Vorlagen</h2>
+                    <p class="hint">Platzhalter: <code>{vorname}</code>, <code>{nachname}</code>, <code>{firma}</code></p>
+
+                    <h3 class="section-title">Hinhalten</h3>
+                    <div class="field"><label for="setStallSubject">Betreff</label><input type="text" id="setStallSubject"></div>
+                    <div class="field field-spaced"><label for="setStallBody">Text</label><textarea id="setStallBody" rows="10"></textarea></div>
+
+                    <h3 class="section-title">Absage</h3>
+                    <div class="field"><label for="setRejectSubject">Betreff</label><input type="text" id="setRejectSubject"></div>
+                    <div class="field field-spaced"><label for="setRejectBody">Text</label><textarea id="setRejectBody" rows="10"></textarea></div>
+                </div>
+
+                <div class="button-row">
+                    <button type="submit" class="btn-save">💾 Einstellungen speichern</button>
+                    <span id="settingsStatus" class="hint"></span>
+                </div>
+            </form>
+        </section>
+    </div>
+
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>

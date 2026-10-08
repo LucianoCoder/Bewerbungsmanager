@@ -1,0 +1,23 @@
+{
+  "name": "bewerbungsmanager",
+  "version": "1.0.0",
+  "description": "Lokaler Bewerbungsmanager mit KI-Lebenslauf-Parser (Ollama), Team-Bewertungen und Ende-zu-Ende-Verschlüsselung im Browser.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server.js"
+  },
+  "engines": {
+    "node": ">=22.13"
+  },
+  "license": "MIT",
+  "type": "commonjs",
+  "dependencies": {
+    "exceljs": "^4.4.0",
+    "express": "^5.2.1",
+    "multer": "^2.0.2",
+    "pdf-parse": "^1.1.1"
+  },
+  "overrides": {
+    "uuid": "^11.1.1"
+  }
+}
