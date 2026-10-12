@@ -31,8 +31,8 @@ Alle personenbezogenen Daten werden **im Browser verschlüsselt**, bevor sie ges
 **Schritte**
 
 ```bash
-git clone https://github.com/<benutzername>/bewerbungsmanager.git
-cd bewerbungsmanager
+git clone https://github.com/LucianoCoder/Bewerbungsmanager.git
+cd Bewerbungsmanager
 npm install
 ```
 
